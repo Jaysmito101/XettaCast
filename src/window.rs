@@ -33,6 +33,10 @@ impl Window {
         self.winit_window.current_monitor().unwrap()
     }
 
+    pub fn get_primary_monitor(&self) -> winit::monitor::MonitorHandle {
+        self.winit_window.primary_monitor().unwrap()
+    }
+
     pub fn scale_factor(&self) -> f64 {
         self.winit_window.scale_factor()
     }

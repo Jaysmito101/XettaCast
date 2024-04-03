@@ -42,6 +42,18 @@ impl ConfigManager {
 
         Ok(global_hotkey::hotkey::HotKey::from_str(trigger.trim()).map_err(|e| format!("Failed to parse trigger: {}", e))?)
     }
+
+    pub fn get_monitor(&self) -> Result<String, String> {
+        let monitor = self.global_config.get("monitor")
+            .and_then(|value| value.as_str())
+            .ok_or("Failed to get monitor")?;
+
+        Ok(monitor.to_string())
+    }
+
+    pub fn set_monitor(&mut self, monitor: Option<String>) {
+        self.update_global_config("monitor", monitor.unwrap_or("primary".to_string()));
+    }
     
     pub fn requires_restart(&self) -> bool {
         self.requires_restart

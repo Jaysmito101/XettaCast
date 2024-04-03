@@ -1,1 +1,2 @@
-trigger: cmd+alt+space
+trigger: cmd+alt+f
+monitor: primary

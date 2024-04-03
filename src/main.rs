@@ -1,5 +1,12 @@
+use wgpu::util;
+use xettacast::utils;
+
 #[tokio::main]
 async fn main() -> Result<(), String> {
+    std::panic::set_hook(Box::new(|panic_info| {
+        xettacast::utils::die("Panic", &format!("{:?}", panic_info));
+    }));
+
     env_logger::builder().filter_level(log::LevelFilter::Debug).init();
 
     let event_loop = winit::event_loop::EventLoop::new();
@@ -10,10 +17,12 @@ async fn main() -> Result<(), String> {
     manager.register(config.get_trigger().unwrap()).unwrap();
 
 
-
     let window = xettacast::Window::new(&event_loop).await;
 
+    let target_monitor = config.get_monitor().unwrap();
+
     let monitors = window.get_available_monitors();
+
     let mut monitor_id = 0;
 
     event_loop.run(move |event, _, control_flow| {
