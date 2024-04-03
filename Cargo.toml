@@ -1,0 +1,29 @@
+[package]
+name = "xettacast"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bytemuck = "1.15.0"
+cfg-if = "1.0.0"
+cgmath = "0.18.0"
+chrono = "0.4.37"
+dirs = "5.0.1"
+env_logger = "0.11.3"
+global-hotkey = "0.5.1"
+image = "0.25.1"
+log = "0.4.21"
+pollster = "0.3.0"
+rayon = "1.10.0"
+serde = "1.0.197"
+serde_yaml = "0.9.34"
+tokio = {version = "1.37.0", features = ["full"]}
+wgpu = "0.19.3"
+winit = "0.28"
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "xettacast"
+path = "src/main.rs"
