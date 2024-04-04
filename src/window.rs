@@ -3,18 +3,20 @@ pub struct Window {
 }
 
 impl Window {
-    pub async fn new(event_loop: &winit::event_loop::EventLoop<()>) -> Self {
+    pub async fn new(event_loop: &winit::event_loop::EventLoop<()>) -> Result<Self, String> {
         let winit_window = winit::window::WindowBuilder::new()
             .with_title("Global Hotkey")
             .with_content_protected(true)
+            .with_visible(false)
+            .with_resizable(false)
             // .with_decorations(false)
             // .with_transparent(true)
             .build(event_loop)
-            .unwrap();
+            .map_err(|e| format!("Failed to create window: {}", e))?;
         
-        Self {
+        Ok(Self {
             winit_window        : winit_window,
-        }
+        })
     }
 
     pub fn id(&self) -> winit::window::WindowId {
@@ -35,6 +37,14 @@ impl Window {
 
     pub fn get_primary_monitor(&self) -> winit::monitor::MonitorHandle {
         self.winit_window.primary_monitor().unwrap()
+    }
+
+    pub fn find_monitor(&self, name: &str) -> Option<winit::monitor::MonitorHandle> {
+        if name == "primary" {
+            Some(self.get_primary_monitor())
+        } else {
+            self.winit_window.available_monitors().find(|monitor| monitor.name().map(|n| n == name).unwrap_or(false))
+        }
     }
 
     pub fn scale_factor(&self) -> f64 {
@@ -69,13 +79,13 @@ impl Window {
     }
 
     pub fn set_monitor(&self, monitor: &winit::monitor::MonitorHandle) {
-        if self.is_minimized() {
-            self.restore();
-        }
+        // if self.is_minimized() {
+        //     self.restore();
+        // }
 
-        if !self.is_visible() {
-            self.show();
-        }
+        // if !self.is_visible() {
+        //     self.show();
+        // }
 
         self.set_size(monitor.size().width, monitor.size().height);
         self.set_position(monitor.position().x, monitor.position().y);
