@@ -1,6 +1,7 @@
 pub struct App {
     config              : crate::ConfigStore,
     window              : crate::Window,
+    gpu_instance        : crate::GPUInstance,
     is_running          : bool,
     hotkey_manager      : Option<global_hotkey::GlobalHotKeyManager>,
 }
@@ -13,12 +14,14 @@ impl App {
             Some(include_str!("./assets/config/default_app.yaml").to_string())).await?;
 
         let window = crate::Window::new(event_loop).await?;
+        let gpu_instance = crate::GPUInstance::new(&window).await?;
 
         let mut obj = Self {
-            config      : config,
-            window      : window,
-            is_running  : true,
-            hotkey_manager: None,
+            config              : config,
+            window              : window,
+            gpu_instance        : gpu_instance,
+            is_running          : true,
+            hotkey_manager      : None,
         };
         
         if let crate::AppConfigItem::Monitor(monitor) = obj.config.get("monitor")? {
@@ -31,6 +34,8 @@ impl App {
             }
         }
 
+        
+        
         obj.setup_hotkey_manager()?;
 
         Ok(obj)

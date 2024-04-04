@@ -8,8 +8,8 @@ impl Window {
             .with_title("Global Hotkey")
             .with_content_protected(true)
             .with_visible(false)
-            .with_resizable(false)
-            // .with_decorations(false)
+            .with_resizable(false).with_window_level(winit::window::WindowLevel::AlwaysOnTop)
+            .with_decorations(false)
             // .with_transparent(true)
             .build(event_loop)
             .map_err(|e| format!("Failed to create window: {}", e))?;
@@ -79,14 +79,6 @@ impl Window {
     }
 
     pub fn set_monitor(&self, monitor: &winit::monitor::MonitorHandle) {
-        // if self.is_minimized() {
-        //     self.restore();
-        // }
-
-        // if !self.is_visible() {
-        //     self.show();
-        // }
-
         self.set_size(monitor.size().width, monitor.size().height);
         self.set_position(monitor.position().x, monitor.position().y);
         // self.winit_window.set_fullscreen(Some(winit::window::Fullscreen::Borderless(Some(monitor.clone()))));
@@ -114,6 +106,10 @@ impl Window {
 
     pub fn show(&self) {
         self.winit_window.set_visible(true);
+    }
+
+    pub fn winit_handle(&self) -> &winit::window::Window {
+        &self.winit_window
     }
     
 

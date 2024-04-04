@@ -19,8 +19,8 @@ rayon = "1.10.0"
 serde = "1.0.197"
 serde_yaml = "0.9.34"
 tokio = {version = "1.37.0", features = ["full"]}
-wgpu = "0.19.3"
-winit = "0.28"
+wgpu = "0.18"
+winit = {version = "0.28"}
 
 [lib]
 path = "src/lib.rs"
