@@ -1,3 +1,2 @@
 trigger: cmd+alt+space
-# monitor: primary
-monitor: \\.\DISPLAY1
+monitor: primary

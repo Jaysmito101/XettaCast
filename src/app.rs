@@ -33,8 +33,6 @@ impl App {
                 obj.window.set_monitor(&obj.window.get_primary_monitor());
             }
         }
-
-        
         
         obj.setup_hotkey_manager()?;
 
@@ -42,9 +40,57 @@ impl App {
     }
 
     pub fn on_update(&mut self) -> Result<bool, String> {
-        self.check_hotkey()?;
-        
+        self.on_render()?;
         Ok(self.is_running)
+    }
+
+    pub fn on_render(&mut self) -> Result<(), String> {
+
+        let mut encoder = self.gpu_instance.encoder("App::on_render");
+        let instance = &self.gpu_instance;
+        let swapchain = instance.swapchain().ok_or("No swapchain!")?;
+
+
+        let surface_texture: wgpu::SurfaceTexture = match swapchain.acquire_texture(&self.gpu_instance) {
+            Ok(surface_texture) => {surface_texture},
+            Err(wgpu::SurfaceError::Lost) => {
+                instance.configure_surface(swapchain.surface_config());
+                return Ok(());
+            },
+            Err(e) => {
+                log::error!("Failed to acquire texture: {}", e);
+                return Ok(());
+            }
+        }.into();
+
+        let view = surface_texture.texture.create_view(&wgpu::TextureViewDescriptor::default());
+
+        let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            color_attachments: &[
+                Some(wgpu::RenderPassColorAttachment {
+                    view: &view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear( wgpu::Color {r: 0.175, g: 0.175, b: 0.175, a: 0.3}),
+                        store:  wgpu::StoreOp::Store,
+                    }
+                })
+            ],
+            depth_stencil_attachment: None,
+            label: Some("render"),
+            occlusion_query_set: None,
+            timestamp_writes: None,
+        });
+
+        drop(rpass);
+
+        self.gpu_instance.submit(encoder);
+        
+        swapchain.present(surface_texture)?;
+
+
+
+        Ok(())
     }
     
     pub fn global_update(&mut self) -> Result<(), String> {
@@ -57,6 +103,11 @@ impl App {
         match event {
             winit::event::WindowEvent::CloseRequested => {
                 self.close();
+            },
+            winit::event::WindowEvent::Resized(size) => {
+                self.gpu_instance.swapchain_mut().unwrap().resize(size.width, size.height);
+                self.gpu_instance.reconfigure_surface();
+                log::info!("Resized: {:?}", size);
             },
             _ => {}
         }

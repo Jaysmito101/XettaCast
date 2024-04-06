@@ -4,6 +4,7 @@ pub struct GPUInstance {
     device          : wgpu::Device,
     queue           : wgpu::Queue,
     surface         : wgpu::Surface,
+    swapchain       : Option<crate::Swapchain>,
 }
 
 
@@ -23,8 +24,8 @@ impl GPUInstance {
             force_fallback_adapter      : false,
         }).await.ok_or("Failed to find an appropriate adapter")?;
 
-        let mut limits = wgpu::Limits::default();
-        let mut features = wgpu::Features::empty();
+        let limits = wgpu::Limits::default();
+        let features = wgpu::Features::empty();
 
 
         let (device, queue) = adapter.request_device(
@@ -36,13 +37,22 @@ impl GPUInstance {
             None,
         ).await.map_err(|e| format!("Failed to create device: {}", e))?;
 
-        Ok(Self {
+        let mut obj = Self {
             instance            : instance,
             adapter             : adapter,
             device              : device,
             queue               : queue,
             surface             : surface,
-        })
+            swapchain           : None,
+        };
+
+        let mut swapchain = crate::Swapchain::new(&obj).await?;
+        swapchain.resize(window.width(), window.height());
+        
+        obj.swapchain = Some(swapchain);
+        obj.reconfigure_surface();
+
+        Ok(obj)
     }
 
     pub fn surface(&self) -> &wgpu::Surface {
@@ -57,8 +67,30 @@ impl GPUInstance {
         &self.queue
     }
 
+    pub fn adapter(&self) -> &wgpu::Adapter {
+        &self.adapter
+    }
+
+    pub fn instance(&self) -> &wgpu::Instance {
+        &self.instance
+    }
+
+    pub fn swapchain_mut(&mut self) -> Option<&mut crate::Swapchain> {
+        self.swapchain.as_mut()
+    }
+
+    pub fn swapchain(&self) -> Option<&crate::Swapchain> {
+        self.swapchain.as_ref()
+    }
+
     pub fn configure_surface(&self, config: &wgpu::SurfaceConfiguration) {
         self.surface.configure(&self.device, config);
+    }
+
+    pub fn reconfigure_surface(&self) {
+        if let Some(swapchain) = self.swapchain.as_ref() {
+            self.surface.configure(&self.device, swapchain.surface_config());
+        }
     }
 
     pub fn encoder(&self, label: &str) -> wgpu::CommandEncoder {
@@ -79,5 +111,4 @@ impl GPUInstance {
     pub fn poll(&self) {
         self.device.poll(wgpu::Maintain::Wait);
     }
-
 }

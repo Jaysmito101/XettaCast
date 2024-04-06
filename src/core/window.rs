@@ -8,9 +8,10 @@ impl Window {
             .with_title("Global Hotkey")
             .with_content_protected(true)
             .with_visible(false)
-            .with_resizable(false).with_window_level(winit::window::WindowLevel::AlwaysOnTop)
+            .with_resizable(false)
+            //.with_window_level(winit::window::WindowLevel::AlwaysOnTop)
             .with_decorations(false)
-            // .with_transparent(true)
+            .with_transparent(true)
             .build(event_loop)
             .map_err(|e| format!("Failed to create window: {}", e))?;
         
@@ -62,6 +63,14 @@ impl Window {
     pub fn get_size(&self) -> (u32, u32) {
         let size = self.winit_window.inner_size();
         (size.width, size.height)
+    }
+
+    pub fn width(&self) -> u32 {
+        self.winit_window.inner_size().width
+    }
+
+    pub fn height(&self) -> u32 {
+        self.winit_window.inner_size().height
     }
 
     pub fn set_size(&self, width: u32, height: u32) {
