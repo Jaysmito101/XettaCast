@@ -7,7 +7,7 @@ impl Window {
         let winit_window = winit::window::WindowBuilder::new()
             .with_title("Global Hotkey")
             .with_content_protected(true)
-            .with_visible(false)
+            // .with_visible(false)
             .with_resizable(false)
             //.with_window_level(winit::window::WindowLevel::AlwaysOnTop)
             .with_decorations(false)

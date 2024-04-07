@@ -4,7 +4,7 @@ async fn main() -> Result<(), String> {
         xettacast::utils::die("Panic", &format!("{:?}", panic_info));
     }));
 
-    env_logger::builder().filter_level(log::LevelFilter::Debug).init();
+    env_logger::builder().filter_level(log::LevelFilter::Info).init();
     let event_loop = winit::event_loop::EventLoop::new();
     let mut app = xettacast::App::new(&event_loop).await.unwrap();
 

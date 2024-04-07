@@ -2,6 +2,7 @@ pub struct App {
     config              : crate::ConfigStore,
     window              : crate::Window,
     gpu_instance        : crate::GPUInstance,
+    renderer            : crate::Renderer,
     is_running          : bool,
     hotkey_manager      : Option<global_hotkey::GlobalHotKeyManager>,
 }
@@ -14,12 +15,15 @@ impl App {
             Some(include_str!("./assets/config/default_app.yaml").to_string())).await?;
 
         let window = crate::Window::new(event_loop).await?;
-        let gpu_instance = crate::GPUInstance::new(&window).await?;
+        let instance = crate::GPUInstance::new(&window).await?;
+
+        let renderer = crate::Renderer::new(&instance, instance.swapchain().ok_or("No Swapchain!")?.surface_config().format).await?;
 
         let mut obj = Self {
             config              : config,
             window              : window,
-            gpu_instance        : gpu_instance,
+            gpu_instance        : instance,
+            renderer            : renderer,
             is_running          : true,
             hotkey_manager      : None,
         };
@@ -71,7 +75,7 @@ impl App {
                     view: &view,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear( wgpu::Color {r: 0.175, g: 0.175, b: 0.175, a: 0.3}),
+                        load: wgpu::LoadOp::Clear( wgpu::Color {r: 0.0, g: 0.0, b: 0.0, a: 0.0}),
                         store:  wgpu::StoreOp::Store,
                     }
                 })
@@ -82,7 +86,17 @@ impl App {
             timestamp_writes: None,
         });
 
+        self.renderer.begin()?;
+
+        // self.renderer.rect(0.0, 0.0, 1.0, 1.0);
+
+        rpass = self.renderer.flush(rpass, &instance)?;
         drop(rpass);
+        
+        self.renderer.end(&instance)?;
+        
+        
+
 
         self.gpu_instance.submit(encoder);
         
