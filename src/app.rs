@@ -50,7 +50,6 @@ impl App {
 
     pub fn on_render(&mut self) -> Result<(), String> {
 
-        let mut encoder = self.gpu_instance.encoder("App::on_render");
         let instance = &self.gpu_instance;
         let swapchain = instance.swapchain().ok_or("No swapchain!")?;
 
@@ -69,36 +68,36 @@ impl App {
 
         let view = surface_texture.texture.create_view(&wgpu::TextureViewDescriptor::default());
 
-        let mut rpass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-            color_attachments: &[
-                Some(wgpu::RenderPassColorAttachment {
-                    view: &view,
-                    resolve_target: None,
-                    ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear( wgpu::Color {r: 0.0, g: 0.0, b: 0.0, a: 0.0}),
-                        store:  wgpu::StoreOp::Store,
-                    }
-                })
-            ],
-            depth_stencil_attachment: None,
-            label: Some("render"),
-            occlusion_query_set: None,
-            timestamp_writes: None,
-        });
-
         self.renderer.begin()?;
+        self.renderer.set_frame_res(self.window.get_size());
+        self.renderer.set_target_view(view);
 
-        // self.renderer.rect(0.0, 0.0, 1.0, 1.0);
 
-        rpass = self.renderer.flush(rpass, &instance)?;
-        drop(rpass);
+
+        // self.renderer.rect(0.1, 0.1, 0.7, 0.9);
+        // for i in 0..10000 {
+        //     let random_x = rand::random::<f32>();
+        //     let random_y = rand::random::<f32>();
+
+        //     self.renderer.set_color(random_x, random_y, 0.0, 1.0);
+
+        //     self.renderer.rect(random_x, random_y, 0.1, 0.1);
+            
+        //     // self.renderer.set_color(1.0, 1.0, 0.0, 1.0);
+        //     // self.renderer.rectp(100, 100, 200, 400);
+        // }
+
+        // self.renderer.set_border_radius(0.1, 0.2, 0.3, 0.4);
+        // self.renderer.set_maskp(50, 150, 200, 300);
+        self.renderer.set_border_radius(0.2, 0.2, 0.4, 1.0);
+        self.renderer.set_color(0.4, 0.0, 0.0, 1.0);
+        self.renderer.rectp(95, 195, 210, 110);
+        self.renderer.set_color(1.0, 1.0, 0.0, 1.0);
+        self.renderer.rectp(100, 200, 200, 100);
+
         
         self.renderer.end(&instance)?;
         
-        
-
-
-        self.gpu_instance.submit(encoder);
         
         swapchain.present(surface_texture)?;
 

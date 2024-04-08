@@ -3130,6 +3130,7 @@ dependencies = [
  "log",
  "native-dialog",
  "pollster",
+ "rand",
  "rayon",
  "serde",
  "serde_yaml",

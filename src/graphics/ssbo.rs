@@ -1,11 +1,11 @@
-pub struct ShaderStorageBufferObject {
+pub struct ShaderStorageBuffer {
     buffer              : wgpu::Buffer,
     layout              : wgpu::BindGroupLayout,
     bind_group          : wgpu::BindGroup,
     size                : usize,
 }
 
-impl ShaderStorageBufferObject {
+impl ShaderStorageBuffer {
 
     pub async fn new(instance: &crate::GPUInstance, size: usize, label: Option<&str>) -> Result<Self, String> {
         let buffer = instance.device().create_buffer(&wgpu::BufferDescriptor {
@@ -22,7 +22,7 @@ impl ShaderStorageBufferObject {
                     binding: 0,
                     visibility: wgpu::ShaderStages::COMPUTE | wgpu::ShaderStages::VERTEX | wgpu::ShaderStages::FRAGMENT,
                     ty: wgpu::BindingType::Buffer { 
-                        ty                  : wgpu::BufferBindingType::Storage { read_only: false },
+                        ty                  : wgpu::BufferBindingType::Storage { read_only: true },
                         has_dynamic_offset  : false,
                         min_binding_size    : None
                     },
@@ -66,8 +66,9 @@ impl ShaderStorageBufferObject {
         self.size
     }
 
-    pub fn upload(&self, instance: &crate::GPUInstance, data: &[u8]) {
+    pub fn upload(&self, instance: &crate::GPUInstance, data: &[u8]) -> Result<(), String> {
         instance.queue().write_buffer(&self.buffer, 0, data);
+        Ok(())
     }
 
 
