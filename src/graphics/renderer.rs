@@ -1,3 +1,4 @@
+#[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]  #[repr(C)]
 struct RendererItem {
     offset_scale            : [f32; 4], // (x, y), (scale_x, scale_y)
     texture_transform       : [f32; 4], // (x, y), (scale_x, scale_y) / color (r, g, b, a)

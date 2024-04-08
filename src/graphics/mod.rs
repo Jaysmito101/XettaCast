@@ -10,5 +10,8 @@ pub use pipeline::*;
 mod ubo;
 pub use ubo::*;
 
+mod ssbo;
+pub use ssbo::*;
+
 mod renderer;
 pub use renderer::*;
