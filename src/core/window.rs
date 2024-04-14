@@ -6,7 +6,7 @@ impl Window {
     pub async fn new(event_loop: &winit::event_loop::EventLoop<()>) -> Result<Self, String> {
         let winit_window = winit::window::WindowBuilder::new()
             .with_title("Global Hotkey")
-            .with_content_protected(true)
+            // .with_content_protected(true)
             // .with_visible(false)
             .with_resizable(false)
             //.with_window_level(winit::window::WindowLevel::AlwaysOnTop)

@@ -5,6 +5,7 @@ pub struct App {
     renderer            : crate::Renderer,
     is_running          : bool,
     hotkey_manager      : Option<global_hotkey::GlobalHotKeyManager>,
+    texture_packer      : crate::TexturePacker,
 }
 
 impl App {
@@ -19,6 +20,32 @@ impl App {
 
         let renderer = crate::Renderer::new(&instance, instance.swapchain().ok_or("No Swapchain!")?.surface_config().format).await?;
 
+        let mut packer = crate::TexturePacker::new(4096, 4096, 2).await?;
+
+        
+
+        //let bytes = include_bytes!("C:\\Windows\\Fonts\\ariblk.ttf");
+        let bytes = include_bytes!("../MaterialDesignIconsDesktop.ttf");
+        let font = crate::Font::new(bytes, 32.0f32).await.unwrap();
+
+
+        font.save_bitmaps("p").unwrap();
+
+        font.glyphs().iter().for_each(|(id, glyph)| {
+            packer.add(&format!("glyph{}", id), glyph.width, glyph.height);
+        });
+
+        // packer.add("asds", 10, 5);
+        
+        log::info!("Packing : {:?}", packer.pack());
+        packer.fill_color()?;
+        packer.save(&format!("p/packed{}.png", 0), 0)?;
+        packer.save(&format!("p/packed{}.png", 1), 1)?;
+
+        packer.fill_color_empty()?;
+        packer.save(&format!("p/empty{}.png", 0), 0)?;
+        packer.save(&format!("p/empty{}.png", 1), 1)?;
+
         let mut obj = Self {
             config              : config,
             window              : window,
@@ -26,6 +53,7 @@ impl App {
             renderer            : renderer,
             is_running          : true,
             hotkey_manager      : None,
+            texture_packer      : packer,
         };
         
         if let crate::AppConfigItem::Monitor(monitor) = obj.config.get("monitor")? {
@@ -80,13 +108,12 @@ impl App {
         //     let random_y = rand::random::<f32>();
 
         //     self.renderer.set_color(random_x, random_y, 0.0, 1.0);
-
         //     self.renderer.rect(random_x, random_y, 0.1, 0.1);
             
         //     // self.renderer.set_color(1.0, 1.0, 0.0, 1.0);
         //     // self.renderer.rectp(100, 100, 200, 400);
         // }
-
+/*
         // self.renderer.set_border_radius(0.1, 0.2, 0.3, 0.4);
         // self.renderer.set_maskp(50, 150, 200, 300);
         self.renderer.set_border_radius(0.2, 0.2, 0.4, 1.0);
@@ -94,6 +121,26 @@ impl App {
         self.renderer.rectp(95, 195, 210, 110);
         self.renderer.set_color(1.0, 1.0, 0.0, 1.0);
         self.renderer.rectp(100, 200, 200, 100);
+        
+        // self.renderer.set_border_radius(0.2, 0.2, 0.4, 1.0);
+        //self.renderer.set_border_radius(0.4, 0.2, 0.4, 0.0);
+        self.renderer.rectp(200, 400, 300, 200);
+*/
+
+        // // draw 32x32 bitmap using rects of 20x20
+        // let mut x = 0;
+        // let mut y = 0;
+        // for pixel in self.font.iter() {
+        //     let color = *pixel as f32 / 255.0;
+        //     self.renderer.set_color(color, color, color, 1.0);
+        //     self.renderer.rectp(100 + 10 * x, 100+ 10 * (31-y), 10, 10);
+
+        //     x += 1;
+        //     if x == 32 {
+        //         x = 0;
+        //         y += 1;
+        //     }
+        // }
 
         
         self.renderer.end(&instance)?;
