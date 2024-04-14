@@ -24,21 +24,63 @@ impl App {
 
         
 
-        //let bytes = include_bytes!("C:\\Windows\\Fonts\\ariblk.ttf");
-        let bytes = include_bytes!("../MaterialDesignIconsDesktop.ttf");
-        let font = crate::Font::new(bytes, 32.0f32).await.unwrap();
+        let bytes0 = include_bytes!("./assets/fonts/OpenSans/OpenSans-Regular.ttf");
+        let bytes1 = include_bytes!("./assets/fonts/Icons/MaterialDesignIconsDesktop.ttf");
+        let font0 = crate::Font::new(bytes0, 50.0f32).await.unwrap();
+        let font1 = crate::Font::new(bytes1, 50.0f32).await.unwrap();
 
 
-        font.save_bitmaps("p").unwrap();
+        // font.save_bitmaps("p").unwrap();
 
-        font.glyphs().iter().for_each(|(id, glyph)| {
-            packer.add(&format!("glyph{}", id), glyph.width, glyph.height);
+        font0.glyphs().iter().for_each(|(id, glyph)| {
+            if glyph.width == 0 || glyph.height == 0 {
+                log::warn!("Empty glyph: {} {}", id, *id as u32);
+                return;
+            }
+            packer.add(&format!("glyph0{}", id), glyph.width, glyph.height);
+        });
+
+        font1.glyphs().iter().for_each(|(id, glyph)| {
+            if glyph.width == 0 || glyph.height == 0 {
+                log::warn!("Empty glyph: {} {}", id, *id as u32);
+                return;
+            }
+            packer.add(&format!("glyph1{}", id), glyph.width, glyph.height);
         });
 
         // packer.add("asds", 10, 5);
         
         log::info!("Packing : {:?}", packer.pack());
-        packer.fill_color()?;
+
+        font0.glyphs().iter().for_each(|(id, glyph)| {
+            let bitmap = &glyph.bitmap;
+            // create a 4 channel bitmap
+            let mut data = vec![0u8; bitmap.len() * 4];
+            for i in 0..bitmap.len() {
+                data[i * 4] = 255;
+                data[i * 4 + 1] = 255;
+                data[i * 4 + 2] = 255;
+                data[i * 4 + 3] = bitmap[i];
+            }
+            packer.update(&format!("glyph0{}", id), &data, glyph.width, glyph.height);
+        });
+
+        font1.glyphs().iter().for_each(|(id, glyph)| {
+            let bitmap = &glyph.bitmap;
+            // create a 4 channel bitmap
+            let mut data = vec![0u8; bitmap.len() * 4];
+            for i in 0..bitmap.len() {
+                data[i * 4] = 255;
+                data[i * 4 + 1] = 255;
+                data[i * 4 + 2] = 255;
+                data[i * 4 + 3] = bitmap[i];
+            }
+            packer.update(&format!("glyph1{}", id), &data, glyph.width, glyph.height);
+        });
+
+        log::info!("Updated all glyphs");
+
+//        packer.fill_color()?;
         packer.save(&format!("p/packed{}.png", 0), 0)?;
         packer.save(&format!("p/packed{}.png", 1), 1)?;
 

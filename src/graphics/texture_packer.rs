@@ -101,29 +101,39 @@ impl TexturePacker
     pub fn add(&mut self, name: &str, width: u32, height: u32) {
         self.to_add.push((name.to_string(), width, height));
     }
-
+    
     pub fn update(&mut self, name: &str, data: &[u8], width: u32, height: u32) {
         if let Some(space) = self.registered.get(name) {
             let layer = &mut self.layers[space.layer as usize];
             // scale the data to the space
             for y in 0..space.height {
                 for x in 0..space.width {
-                    let x_f = x as f32 / space.width as f32;
-                    let y_f = y as f32 / space.height as f32;
-                    let x = (x_f * (width - 1) as f32) as u32;
-                    let y = (y_f * (height - 1) as f32) as u32;
-                    let index = (y * width + x) as usize * 4;
-
-                    let index = ((space.y + y) * self.width + (space.x + x)) as usize * 4;
-                    layer[index + 0] = data[index + 0];
-                    layer[index + 1] = data[index + 1];
-                    layer[index + 2] = data[index + 2];
-                    layer[index + 3] = data[index + 3];
+                    
+                    if width != space.width || height != space.height {
+                        let x_f = x as f32 / space.width as f32;
+                        let y_f = y as f32 / space.height as f32;
+                        let xi = (x_f * (width - 1) as f32) as u32;
+                        let yi = (y_f * (height - 1) as f32) as u32;
+                        let indexi = (yi * width + xi) as usize * 4;
+                        let indexo = ((space.y + y) * self.width + (space.x + x)) as usize * 4;
+                        layer[indexo + 0] = data[indexi + 0];
+                        layer[indexo + 1] = data[indexi + 1];
+                        layer[indexo + 2] = data[indexi + 2];
+                        layer[indexo + 3] = data[indexi + 3];
+                    }
+                    else {
+                        let indexi = (y * width + x) as usize * 4;
+                        let indexo = ((space.y + y) * self.width + (space.x + x)) as usize * 4;
+                        layer[indexo + 0] = data[indexi + 0];
+                        layer[indexo + 1] = data[indexi + 1];
+                        layer[indexo + 2] = data[indexi + 2];
+                        layer[indexo + 3] = data[indexi + 3];
+                    }
                 }
             }
         }
     }
-
+    
     pub fn pack(&mut self) -> Result<(), String> 
     {
         self.to_add.sort_by(|a, b| {
@@ -142,16 +152,16 @@ impl TexturePacker
                 }
             }
         }
-
+        
         self.to_add.retain(|(name, _, _)| could_not_pack.contains(name));
-
+        
         if could_not_pack.len() > 0 {
             return Err(format!("Could not pack: {} of {} {:?}", could_not_pack.len(), to_add.len(), could_not_pack));
         }
-
+        
         Ok(())
     }
-
+    
     fn pack_item(&mut self, name: &str, width: u32, height: u32) -> Result<(u32, u32), String> 
     {
         for index in (0..self.spaces.len()).rev() {
@@ -250,7 +260,7 @@ impl TexturePacker
         
         Ok(())
     }
-
+    
     pub fn fill_color_empty(&mut self) -> Result<(), String> 
     {
         // first clear all layers with (0, 0, 0, 0)
